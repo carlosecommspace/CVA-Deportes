@@ -53,58 +53,48 @@ async function main() {
   }
   console.log(`✅ ${disciplines.length} disciplinas creadas`)
 
-  // Solo actualiza contraseñas si el admin aún no tiene la contraseña nueva.
-  // En deploys futuros (contraseña ya aplicada) este bloque no toca nada.
+  // Crear usuarios solo si no existen (primera vez). En deploys posteriores no se tocan.
   const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@cva.com' } })
-  const passwordsNeedUpdate =
-    !existingAdmin || !(await bcrypt.compare('gestion4821', existingAdmin.password))
 
-  if (passwordsNeedUpdate) {
-    console.log('🔑 Aplicando contraseñas actualizadas...')
-  }
+  if (!existingAdmin) {
+    console.log('👤 Primera vez: creando usuarios iniciales...')
 
-  // Create Admin
-  const adminPassword = await bcrypt.hash('gestion4821', 10)
-  await prisma.user.upsert({
-    where: { email: 'admin@cva.com' },
-    update: passwordsNeedUpdate ? { password: adminPassword } : {},
-    create: {
-      email: 'admin@cva.com',
-      password: adminPassword,
-      name: 'Administrador CVA',
-      role: 'ADMIN',
-    },
-  })
-
-  // Create Trabajadora
-  const trabajadoraPassword = await bcrypt.hash('bienestar7364', 10)
-  await prisma.user.upsert({
-    where: { email: 'social@cva.com' },
-    update: passwordsNeedUpdate ? { password: trabajadoraPassword } : {},
-    create: {
-      email: 'social@cva.com',
-      password: trabajadoraPassword,
-      name: 'María González',
-      role: 'TRABAJADORA',
-    },
-  })
-
-  // Create committee users — each with a unique password based on their discipline
-  for (const u of committeeUsers) {
-    const hashed = await bcrypt.hash(u.password, 10)
-    await prisma.user.upsert({
-      where: { email: u.email },
-      update: passwordsNeedUpdate ? { password: hashed } : {},
-      create: {
-        email: u.email,
-        password: hashed,
-        name: u.name,
-        role: 'COMITE',
-        disciplineId: createdDisciplines[u.discipline],
+    const adminPassword = await bcrypt.hash('gestion4821', 10)
+    await prisma.user.create({
+      data: {
+        email: 'admin@cva.com',
+        password: adminPassword,
+        name: 'Administrador CVA',
+        role: 'ADMIN',
       },
     })
+
+    const trabajadoraPassword = await bcrypt.hash('bienestar7364', 10)
+    await prisma.user.create({
+      data: {
+        email: 'social@cva.com',
+        password: trabajadoraPassword,
+        name: 'María González',
+        role: 'TRABAJADORA',
+      },
+    })
+
+    for (const u of committeeUsers) {
+      const hashed = await bcrypt.hash(u.password, 10)
+      await prisma.user.create({
+        data: {
+          email: u.email,
+          password: hashed,
+          name: u.name,
+          role: 'COMITE',
+          disciplineId: createdDisciplines[u.discipline],
+        },
+      })
+    }
+    console.log(`✅ ${committeeUsers.length + 2} usuarios creados`)
+  } else {
+    console.log('⏭️  Usuarios ya existen — omitiendo creación')
   }
-  console.log(`✅ ${committeeUsers.length + 2} usuarios procesados`)
 
   // Sample events — only if no events exist yet (avoid duplicates on redeploy)
   const existingEvents = await prisma.event.count()
@@ -274,13 +264,6 @@ async function main() {
 
   console.log('✅ Datos de ejemplo creados')
   console.log('\n🎉 Seed completado exitosamente!')
-  console.log('\n📋 Credenciales de acceso:')
-  console.log('  Admin:       admin@cva.com          / gestion4821')
-  console.log('  Trabajadora: social@cva.com         / bienestar7364')
-  console.log('\n  Comités:')
-  for (const u of committeeUsers) {
-    console.log(`  ${u.email.padEnd(30)} / ${u.password}`)
-  }
 }
 
 main()
