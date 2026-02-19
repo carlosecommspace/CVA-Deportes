@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         String   @default("COMITE") // ADMIN | TRABAJADORA | COMITE
+  disciplineId String?
+  discipline   Discipline? @relation(fields: [disciplineId], references: [id])
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  createdEvents     Event[]          @relation("EventCreator")
+  comments          EventComment[]
+  createdTasks      Task[]           @relation("TaskCreator")
+  assignedTasks     Task[]           @relation("TaskAssignee")
+  requirements      Requirement[]
+  checklistItems    EventChecklist[] @relation("ChecklistCompleter")
+  accounts          Account[]
+  sessions          Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Discipline {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  color        String        @default("#0073c6")
+  icon         String        @default("🏆")
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+
+  users        User[]
+  events       Event[]
+  requirements Requirement[]
+}
+
+model Event {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  location     String?
+  date         DateTime
+  endDate      DateTime?
+  disciplineId String
+  discipline   Discipline @relation(fields: [disciplineId], references: [id])
+  status       String     @default("PLANIFICADO") // PLANIFICADO | EN_PROGRESO | COMPLETADO | CANCELADO | POSTERGADO
+  createdById  String
+  createdBy    User       @relation("EventCreator", fields: [createdById], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  comments     EventComment[]
+  images       EventImage[]
+  checklist    EventChecklist[]
+}
+
+model EventComment {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model EventImage {
+  id           String   @id @default(cuid())
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  url          String
+  name         String
+  uploadedById String
+  createdAt    DateTime @default(now())
+}
+
+model EventChecklist {
+  id            String    @id @default(cuid())
+  eventId       String
+  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  item          String
+  completed     Boolean   @default(false)
+  completedById String?
+  completedBy   User?     @relation("ChecklistCompleter", fields: [completedById], references: [id])
+  completedAt   DateTime?
+  order         Int       @default(0)
+}
+
+model Requirement {
+  id            String    @id @default(cuid())
+  disciplineId  String
+  discipline    Discipline @relation(fields: [disciplineId], references: [id])
+  title         String
+  description   String?
+  category      String?   // implementos | insumos | equipamiento | infraestructura | otro
+  priority      String    @default("MEDIA") // ALTA | MEDIA | BAJA
+  estimatedDate DateTime?
+  quantity      Int?
+  unit          String?
+  status        String    @default("PENDIENTE") // PENDIENTE | EN_PROCESO | ADQUIRIDO | CANCELADO
+  notes         String?
+  createdById   String
+  createdBy     User      @relation(fields: [createdById], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Task {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  status       String    @default("POR_HACER") // POR_HACER | EN_PROGRESO | PARA_REVISAR | COMPLETADA
+  priority     String    @default("MEDIA") // ALTA | MEDIA | BAJA
+  dueDate      DateTime?
+  createdById  String
+  createdBy    User      @relation("TaskCreator", fields: [createdById], references: [id])
+  assignedToId String?
+  assignedTo   User?     @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
