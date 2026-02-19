@@ -85,7 +85,7 @@ export default function TareasPage() {
         <TaskModal
           open={createOpen}
           onClose={() => setCreateOpen(false)}
-          onSuccess={loadTasks}
+          onSuccess={() => { setCreateOpen(false); loadTasks() }}
         />
       )}
     </div>
