@@ -289,7 +289,7 @@ export default function RequerimientosPage() {
         <RequirementModal
           open={createOpen}
           onClose={() => setCreateOpen(false)}
-          onSuccess={loadRequirements}
+          onSuccess={() => { setCreateOpen(false); loadRequirements() }}
         />
       )}
       {editTarget && (
