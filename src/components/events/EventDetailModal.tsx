@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { Select, Textarea } from '@/components/ui/Input'
+import { Input, Select, Textarea } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import {
   MapPin, Clock, CheckSquare, Square, MessageCircle,
-  Plus, Trash2, User
+  Plus, Trash2, User, Pencil, X
 } from 'lucide-react'
-import { EVENT_STATUS, formatDateTime, formatDate } from '@/lib/utils'
+import { EVENT_STATUS, formatDateTime, formatDate, formatDateTimeLocal } from '@/lib/utils'
 
 interface ChecklistItem {
   id: string
@@ -58,6 +58,9 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
   const [sendingComment, setSendingComment] = useState(false)
   const [newCheckItem, setNewCheckItem] = useState('')
   const [savingStatus, setSavingStatus] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ title: '', date: '', endDate: '', location: '', description: '' })
+  const [savingEdit, setSavingEdit] = useState(false)
 
   const loadEvent = () => {
     fetch(`/api/events/${eventId}`)
@@ -120,6 +123,40 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
     loadEvent()
   }
 
+  const handleStartEdit = () => {
+    setEditForm({
+      title: event!.title,
+      date: formatDateTimeLocal(event!.date),
+      endDate: event!.endDate ? formatDateTimeLocal(event!.endDate) : '',
+      location: event!.location || '',
+      description: event!.description || '',
+    })
+    setEditing(true)
+    setTab('info')
+  }
+
+  const handleSaveEdit = async () => {
+    setSavingEdit(true)
+    await fetch(`/api/events/${eventId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editForm),
+    })
+    setSavingEdit(false)
+    setEditing(false)
+    loadEvent()
+    onUpdate()
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.')) return
+    await fetch(`/api/events/${eventId}`, { method: 'DELETE' })
+    onUpdate()
+    onClose()
+  }
+
+  const canDelete = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA'
+
   const canEditEvent = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA' ||
     (session?.user.role === 'COMITE' && event?.discipline.name === session.user.disciplineName)
 
@@ -156,8 +193,8 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
               <p className="text-sm text-gray-500 mt-0.5">{event.discipline.name}</p>
             </div>
           </div>
-          <div className="flex-shrink-0">
-            {canEditEvent ? (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {canEditEvent && !editing ? (
               <Select
                 value={event.status}
                 onChange={(e) => handleStatusChange(e.target.value)}
@@ -167,8 +204,35 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
                   <option key={k} value={k}>{v.label}</option>
                 ))}
               </Select>
-            ) : (
+            ) : !editing ? (
               <Badge className={statusInfo?.color}>{statusInfo?.label}</Badge>
+            ) : null}
+            {canDelete && !editing && (
+              <>
+                <button
+                  onClick={handleStartEdit}
+                  title="Editar evento"
+                  className="p-1.5 text-gray-400 hover:text-primary-600 rounded-lg hover:bg-white/60 transition-colors"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleDelete}
+                  title="Eliminar evento"
+                  className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-white/60 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </>
+            )}
+            {editing && (
+              <button
+                onClick={() => setEditing(false)}
+                title="Cancelar edición"
+                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/60 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             )}
           </div>
         </div>
@@ -215,7 +279,7 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
       </div>
 
       {/* Tab content */}
-      {tab === 'info' && (
+      {tab === 'info' && !editing && (
         <div className="space-y-4">
           {event.description && (
             <div>
@@ -234,6 +298,49 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
               <p className="text-2xl font-bold text-gray-900">{event.comments.length}</p>
               <p className="text-xs text-gray-500">comentarios</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {tab === 'info' && editing && (
+        <div className="space-y-4">
+          <Input
+            label="Título *"
+            value={editForm.title}
+            onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Fecha y hora de inicio *"
+              type="datetime-local"
+              value={editForm.date}
+              onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+            />
+            <Input
+              label="Fecha y hora de fin"
+              type="datetime-local"
+              value={editForm.endDate}
+              onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
+            />
+          </div>
+          <Input
+            label="Lugar / Ubicación"
+            value={editForm.location}
+            onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+          />
+          <Textarea
+            label="Descripción"
+            value={editForm.description}
+            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            rows={3}
+          />
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="outline" onClick={() => setEditing(false)} className="flex-1">
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit} loading={savingEdit} className="flex-1">
+              Guardar cambios
+            </Button>
           </div>
         </div>
       )}
