@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       description,
       priority: priority || 'MEDIA',
       dueDate: dueDate ? new Date(dueDate) : null,
-      assignedToId,
+      assignedToId: assignedToId || undefined,
       createdById: session.user.id,
       order: count,
     },

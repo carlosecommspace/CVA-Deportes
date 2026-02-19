@@ -63,11 +63,13 @@ export function TaskModal({ open, onClose, onSuccess, task }: TaskModalProps) {
         body: JSON.stringify(form),
       })
       if (!res.ok) {
-        const err = await res.json()
-        alert(err.error || 'Error')
+        const err = await res.json().catch(() => ({}))
+        alert(err.error || 'Error al guardar la tarea')
         return
       }
       onSuccess()
+    } catch {
+      alert('Error de conexión al guardar la tarea')
     } finally {
       setLoading(false)
     }
@@ -110,6 +112,19 @@ export function TaskModal({ open, onClose, onSuccess, task }: TaskModalProps) {
             onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
           />
         </div>
+
+        {workers.length > 0 && (
+          <Select
+            label="Asignar a"
+            value={form.assignedToId}
+            onChange={(e) => setForm({ ...form, assignedToId: e.target.value })}
+          >
+            <option value="">Sin asignar</option>
+            {workers.map((w) => (
+              <option key={w.id} value={w.id}>{w.name}</option>
+            ))}
+          </Select>
+        )}
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="outline" onClick={onClose} className="flex-1">
