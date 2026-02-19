@@ -95,13 +95,14 @@ async function main() {
   }
   console.log(`✅ ${committeeUsers.length + 2} usuarios creados`)
 
-  // Sample events
+  // Sample events — only if no events exist yet (avoid duplicates on redeploy)
+  const existingEvents = await prisma.event.count()
   const admin = await prisma.user.findUnique({ where: { email: 'admin@cva.com' } })
   const tenisId = createdDisciplines['Tenis']
   const natacionId = createdDisciplines['Natación']
   const bailoterapiaId = createdDisciplines['Bailoterapia']
 
-  if (admin) {
+  if (admin && existingEvents === 0) {
     const event1 = await prisma.event.create({
       data: {
         title: 'Torneo de Tenis Mensual',
