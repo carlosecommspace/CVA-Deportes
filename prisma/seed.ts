@@ -53,11 +53,21 @@ async function main() {
   }
   console.log(`✅ ${disciplines.length} disciplinas creadas`)
 
+  // Solo actualiza contraseñas si el admin aún no tiene la contraseña nueva.
+  // En deploys futuros (contraseña ya aplicada) este bloque no toca nada.
+  const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@cva.com' } })
+  const passwordsNeedUpdate =
+    !existingAdmin || !(await bcrypt.compare('gestion4821', existingAdmin.password))
+
+  if (passwordsNeedUpdate) {
+    console.log('🔑 Aplicando contraseñas actualizadas...')
+  }
+
   // Create Admin
   const adminPassword = await bcrypt.hash('gestion4821', 10)
   await prisma.user.upsert({
     where: { email: 'admin@cva.com' },
-    update: { password: adminPassword },
+    update: passwordsNeedUpdate ? { password: adminPassword } : {},
     create: {
       email: 'admin@cva.com',
       password: adminPassword,
@@ -70,7 +80,7 @@ async function main() {
   const trabajadoraPassword = await bcrypt.hash('bienestar7364', 10)
   await prisma.user.upsert({
     where: { email: 'social@cva.com' },
-    update: { password: trabajadoraPassword },
+    update: passwordsNeedUpdate ? { password: trabajadoraPassword } : {},
     create: {
       email: 'social@cva.com',
       password: trabajadoraPassword,
@@ -84,7 +94,7 @@ async function main() {
     const hashed = await bcrypt.hash(u.password, 10)
     await prisma.user.upsert({
       where: { email: u.email },
-      update: { password: hashed },
+      update: passwordsNeedUpdate ? { password: hashed } : {},
       create: {
         email: u.email,
         password: hashed,
@@ -94,7 +104,7 @@ async function main() {
       },
     })
   }
-  console.log(`✅ ${committeeUsers.length + 2} usuarios creados`)
+  console.log(`✅ ${committeeUsers.length + 2} usuarios procesados`)
 
   // Sample events — only if no events exist yet (avoid duplicates on redeploy)
   const existingEvents = await prisma.event.count()
