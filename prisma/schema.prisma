@@ -93,7 +93,6 @@ model Event {
   updatedAt    DateTime   @updatedAt
 
   comments     EventComment[]
-  images       EventImage[]
   checklist    EventChecklist[]
 }
 
@@ -105,16 +104,6 @@ model EventComment {
   user      User     @relation(fields: [userId], references: [id])
   content   String
   createdAt DateTime @default(now())
-}
-
-model EventImage {
-  id           String   @id @default(cuid())
-  eventId      String
-  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  url          String
-  name         String
-  uploadedById String
-  createdAt    DateTime @default(now())
 }
 
 model EventChecklist {

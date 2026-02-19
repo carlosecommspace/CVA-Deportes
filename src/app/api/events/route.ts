@@ -11,7 +11,7 @@ export async function GET() {
     include: {
       discipline: true,
       createdBy: { select: { id: true, name: true } },
-      _count: { select: { comments: true, images: true, checklist: true } },
+      _count: { select: { comments: true, checklist: true } },
     },
     orderBy: { date: 'asc' },
   })

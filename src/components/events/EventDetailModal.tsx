@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
@@ -8,7 +8,7 @@ import { Select, Textarea } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import {
   MapPin, Clock, CheckSquare, Square, MessageCircle,
-  ImageIcon, Upload, Plus, Trash2, User
+  Plus, Trash2, User
 } from 'lucide-react'
 import { EVENT_STATUS, formatDateTime, formatDate } from '@/lib/utils'
 
@@ -27,13 +27,6 @@ interface Comment {
   user: { id: string; name: string }
 }
 
-interface EventImage {
-  id: string
-  url: string
-  name: string
-  createdAt: string
-}
-
 interface EventDetail {
   id: string
   title: string
@@ -45,7 +38,6 @@ interface EventDetail {
   discipline: { name: string; color: string; icon: string }
   createdBy: { id: string; name: string; email: string }
   comments: Comment[]
-  images: EventImage[]
   checklist: ChecklistItem[]
 }
 
@@ -55,7 +47,7 @@ interface EventDetailModalProps {
   onUpdate: () => void
 }
 
-type Tab = 'info' | 'checklist' | 'comments' | 'files'
+type Tab = 'info' | 'checklist' | 'comments'
 
 export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModalProps) {
   const { data: session } = useSession()
@@ -65,9 +57,7 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
   const [newComment, setNewComment] = useState('')
   const [sendingComment, setSendingComment] = useState(false)
   const [newCheckItem, setNewCheckItem] = useState('')
-  const [uploadingFile, setUploadingFile] = useState(false)
   const [savingStatus, setSavingStatus] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const loadEvent = () => {
     fetch(`/api/events/${eventId}`)
@@ -130,19 +120,6 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
     loadEvent()
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploadingFile(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('eventId', eventId)
-    await fetch('/api/upload', { method: 'POST', body: formData })
-    setUploadingFile(false)
-    loadEvent()
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
   const canEditEvent = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA' ||
     (session?.user.role === 'COMITE' && event?.discipline.name === session.user.disciplineName)
 
@@ -165,7 +142,6 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
     { key: 'info', label: 'Información' },
     { key: 'checklist', label: 'Checklist', count: event.checklist.length },
     { key: 'comments', label: 'Comentarios', count: event.comments.length },
-    { key: 'files', label: 'Archivos', count: event.images.length },
   ]
 
   return (
@@ -366,59 +342,6 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
         </div>
       )}
 
-      {tab === 'files' && (
-        <div>
-          {event.images.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm">
-              <ImageIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              No hay archivos adjuntos
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-              {event.images.map((img) => {
-                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(img.url)
-                return (
-                  <a
-                    key={img.id}
-                    href={img.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block border border-gray-200 rounded-xl overflow-hidden hover:border-primary-300 transition-colors"
-                  >
-                    {isImage ? (
-                      <img src={img.url} alt={img.name} className="w-full h-32 object-cover" />
-                    ) : (
-                      <div className="w-full h-32 bg-gray-50 flex flex-col items-center justify-center gap-2">
-                        <ImageIcon className="w-8 h-8 text-gray-400" />
-                        <span className="text-xs text-gray-500 px-2 text-center truncate w-full">{img.name}</span>
-                      </div>
-                    )}
-                  </a>
-                )
-              })}
-            </div>
-          )}
-
-          <div className="mt-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              loading={uploadingFile}
-              className="w-full"
-            >
-              <Upload className="w-4 h-4" />
-              {uploadingFile ? 'Subiendo...' : 'Subir imagen o flyer'}
-            </Button>
-          </div>
-        </div>
-      )}
     </Modal>
   )
 }

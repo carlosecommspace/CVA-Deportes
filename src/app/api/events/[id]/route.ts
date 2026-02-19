@@ -16,7 +16,6 @@ export async function GET(_: NextRequest, { params }: { params: { id: string } }
         include: { user: { select: { id: true, name: true } } },
         orderBy: { createdAt: 'asc' },
       },
-      images: true,
       checklist: {
         include: { completedBy: { select: { id: true, name: true } } },
         orderBy: { order: 'asc' },
