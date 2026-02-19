@@ -20,6 +20,24 @@ const disciplines = [
   { name: 'Pilates', color: '#a21caf', icon: '🧘' },
 ]
 
+// Palabra clave por disciplina + 4 dígitos únicos
+const committeeUsers = [
+  { name: 'Carlos Pérez',     discipline: 'Tenis',          email: 'tenis@cva.com',         password: 'raqueta3752' },
+  { name: 'Ana Martínez',     discipline: 'Tenis de Mesa',  email: 'tenismesa@cva.com',      password: 'paleta9148' },
+  { name: 'Luis Rodríguez',   discipline: 'Pickleball',     email: 'pickleball@cva.com',     password: 'pala6283' },
+  { name: 'Sofia López',      discipline: 'Padel',          email: 'padel@cva.com',          password: 'pista5417' },
+  { name: 'Pedro Gómez',      discipline: 'Natación',       email: 'natacion@cva.com',       password: 'piscina8036' },
+  { name: 'Valentina Torres', discipline: 'Futbolito',      email: 'futbolito@cva.com',      password: 'cancha2795' },
+  { name: 'Rosa Díaz',        discipline: 'Bailoterapia',   email: 'bailoterapia@cva.com',   password: 'ritmo4862' },
+  { name: 'Miguel Herrera',   discipline: 'Xtreme Bike',    email: 'bike@cva.com',           password: 'pedal7319' },
+  { name: 'Fernando Ruiz',    discipline: 'Gimnasio',       email: 'gimnasio@cva.com',       password: 'pesas1647' },
+  { name: 'Laura Jiménez',    discipline: 'Funcionales',    email: 'funcionales@cva.com',    password: 'circuito9253' },
+  { name: 'José Morales',     discipline: 'Bolas Criollas', email: 'bolascriollas@cva.com',  password: 'bola3481' },
+  { name: 'Carmen Vega',      discipline: 'Dominó',         email: 'domino@cva.com',         password: 'ficha7926' },
+  { name: 'Roberto Castro',   discipline: 'Barajas',        email: 'barajas@cva.com',        password: 'carta5138' },
+  { name: 'Patricia Mendoza', discipline: 'Pilates',        email: 'pilates@cva.com',        password: 'esterilla8472' },
+]
+
 async function main() {
   console.log('🌱 Iniciando seed de base de datos...')
 
@@ -36,10 +54,10 @@ async function main() {
   console.log(`✅ ${disciplines.length} disciplinas creadas`)
 
   // Create Admin
-  const adminPassword = await bcrypt.hash('admin123', 10)
+  const adminPassword = await bcrypt.hash('gestion4821', 10)
   await prisma.user.upsert({
     where: { email: 'admin@cva.com' },
-    update: {},
+    update: { password: adminPassword },
     create: {
       email: 'admin@cva.com',
       password: adminPassword,
@@ -49,10 +67,10 @@ async function main() {
   })
 
   // Create Trabajadora
-  const trabajadoraPassword = await bcrypt.hash('social123', 10)
+  const trabajadoraPassword = await bcrypt.hash('bienestar7364', 10)
   await prisma.user.upsert({
     where: { email: 'social@cva.com' },
-    update: {},
+    update: { password: trabajadoraPassword },
     create: {
       email: 'social@cva.com',
       password: trabajadoraPassword,
@@ -61,32 +79,15 @@ async function main() {
     },
   })
 
-  // Create committee users for each discipline
-  const committeePassword = await bcrypt.hash('comite123', 10)
-  const committeeUsers = [
-    { name: 'Carlos Pérez', discipline: 'Tenis', email: 'tenis@cva.com' },
-    { name: 'Ana Martínez', discipline: 'Tenis de Mesa', email: 'tenismesa@cva.com' },
-    { name: 'Luis Rodríguez', discipline: 'Pickleball', email: 'pickleball@cva.com' },
-    { name: 'Sofia López', discipline: 'Padel', email: 'padel@cva.com' },
-    { name: 'Pedro Gómez', discipline: 'Natación', email: 'natacion@cva.com' },
-    { name: 'Valentina Torres', discipline: 'Futbolito', email: 'futbolito@cva.com' },
-    { name: 'Rosa Díaz', discipline: 'Bailoterapia', email: 'bailoterapia@cva.com' },
-    { name: 'Miguel Herrera', discipline: 'Xtreme Bike', email: 'bike@cva.com' },
-    { name: 'Fernando Ruiz', discipline: 'Gimnasio', email: 'gimnasio@cva.com' },
-    { name: 'Laura Jiménez', discipline: 'Funcionales', email: 'funcionales@cva.com' },
-    { name: 'José Morales', discipline: 'Bolas Criollas', email: 'bolascriollas@cva.com' },
-    { name: 'Carmen Vega', discipline: 'Dominó', email: 'domino@cva.com' },
-    { name: 'Roberto Castro', discipline: 'Barajas', email: 'barajas@cva.com' },
-    { name: 'Patricia Mendoza', discipline: 'Pilates', email: 'pilates@cva.com' },
-  ]
-
+  // Create committee users — each with a unique password based on their discipline
   for (const u of committeeUsers) {
+    const hashed = await bcrypt.hash(u.password, 10)
     await prisma.user.upsert({
       where: { email: u.email },
-      update: {},
+      update: { password: hashed },
       create: {
         email: u.email,
-        password: committeePassword,
+        password: hashed,
         name: u.name,
         role: 'COMITE',
         disciplineId: createdDisciplines[u.discipline],
@@ -264,10 +265,12 @@ async function main() {
   console.log('✅ Datos de ejemplo creados')
   console.log('\n🎉 Seed completado exitosamente!')
   console.log('\n📋 Credenciales de acceso:')
-  console.log('  Admin:       admin@cva.com     / admin123')
-  console.log('  Trabajadora: social@cva.com    / social123')
-  console.log('  Comités:     <disciplina>@cva.com / comite123')
-  console.log('  Ejemplo:     tenis@cva.com     / comite123')
+  console.log('  Admin:       admin@cva.com          / gestion4821')
+  console.log('  Trabajadora: social@cva.com         / bienestar7364')
+  console.log('\n  Comités:')
+  for (const u of committeeUsers) {
+    console.log(`  ${u.email.padEnd(30)} / ${u.password}`)
+  }
 }
 
 main()
