@@ -37,12 +37,18 @@ export function EventModal({ open, onClose, onSuccess, defaultDate }: EventModal
     fetch('/api/disciplines')
       .then((r) => r.json())
       .then((data: Discipline[]) => {
-        setDisciplines(data)
-        // Pre-select discipline for committee users
-        if (session?.user.role === 'COMITE' && session.user.disciplineId) {
-          setForm((f) => ({ ...f, disciplineId: session.user.disciplineId! }))
-        } else if (data.length > 0) {
-          setForm((f) => ({ ...f, disciplineId: f.disciplineId || data[0].id }))
+        if (session?.user.role === 'SOCIALES') {
+          const social = data.find((d) => d.name === 'Actividad Social')
+          const filtered = social ? [social] : []
+          setDisciplines(filtered)
+          if (social) setForm((f) => ({ ...f, disciplineId: social.id }))
+        } else {
+          setDisciplines(data)
+          if (session?.user.role === 'COMITE' && session.user.disciplineId) {
+            setForm((f) => ({ ...f, disciplineId: session.user.disciplineId! }))
+          } else if (data.length > 0) {
+            setForm((f) => ({ ...f, disciplineId: f.disciplineId || data[0].id }))
+          }
         }
       })
   }, [session])
@@ -121,7 +127,7 @@ export function EventModal({ open, onClose, onSuccess, defaultDate }: EventModal
           label="Disciplina *"
           value={form.disciplineId}
           onChange={(e) => setForm({ ...form, disciplineId: e.target.value })}
-          disabled={session?.user.role === 'COMITE'}
+          disabled={session?.user.role === 'COMITE' || session?.user.role === 'SOCIALES'}
           required
         >
           <option value="">Selecciona una disciplina</option>

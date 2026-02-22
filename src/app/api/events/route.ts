@@ -35,6 +35,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Solo puedes crear eventos para tu disciplina' }, { status: 403 })
   }
 
+  // SOCIALES can only create events under "Actividad Social"
+  if (session.user.role === 'SOCIALES') {
+    const disc = await prisma.discipline.findUnique({ where: { id: disciplineId } })
+    if (!disc || disc.name !== 'Actividad Social') {
+      return NextResponse.json({ error: 'Solo puedes crear eventos bajo Actividad Social' }, { status: 403 })
+    }
+  }
+
   const event = await prisma.event.create({
     data: {
       title,

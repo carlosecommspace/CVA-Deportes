@@ -18,6 +18,7 @@ const disciplines = [
   { name: 'Dominó', color: '#1e293b', icon: '🁣' },
   { name: 'Barajas', color: '#9f1239', icon: '🃏' },
   { name: 'Pilates', color: '#a21caf', icon: '🧘' },
+  { name: 'Actividad Social', color: '#0e7490', icon: '🎉' },
 ]
 
 const committeeUsers = [

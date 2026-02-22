@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { PRIORITY, TASK_STATUS, formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
-import { Edit2, Trash2, Calendar, User, GripVertical } from 'lucide-react'
+import { Edit2, Trash2, Calendar, User, GripVertical, Archive } from 'lucide-react'
 import { TaskModal } from './TaskModal'
 import type { Session } from 'next-auth'
 
@@ -32,9 +32,10 @@ interface KanbanBoardProps {
   tasks: Task[]
   onUpdate: () => void
   session: Session | null
+  onArchive?: (id: string) => void
 }
 
-export function KanbanBoard({ tasks, onUpdate, session }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, onUpdate, session, onArchive }: KanbanBoardProps) {
   const [editTask, setEditTask] = useState<Task | null>(null)
 
   const getColumnTasks = (status: string) =>
@@ -57,6 +58,17 @@ export function KanbanBoard({ tasks, onUpdate, session }: KanbanBoardProps) {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar esta tarea?')) return
     await fetch(`/api/tasks/${id}`, { method: 'DELETE' })
+    onUpdate()
+  }
+
+  const handleArchive = async (id: string) => {
+    if (!confirm('¿Archivar esta tarea? Quedará oculta del tablero.')) return
+    await fetch(`/api/tasks/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ archived: true }),
+    })
+    if (onArchive) onArchive(id)
     onUpdate()
   }
 
@@ -129,12 +141,23 @@ export function KanbanBoard({ tasks, onUpdate, session }: KanbanBoardProps) {
                                           <button
                                             onClick={() => setEditTask(task)}
                                             className="p-1 text-gray-300 hover:text-primary-600 rounded transition-colors"
+                                            title="Editar"
                                           >
                                             <Edit2 className="w-3.5 h-3.5" />
                                           </button>
+                                          {role === 'ADMIN' && (
+                                            <button
+                                              onClick={() => handleArchive(task.id)}
+                                              className="p-1 text-gray-300 hover:text-amber-500 rounded transition-colors"
+                                              title="Archivar"
+                                            >
+                                              <Archive className="w-3.5 h-3.5" />
+                                            </button>
+                                          )}
                                           <button
                                             onClick={() => handleDelete(task.id)}
                                             className="p-1 text-gray-300 hover:text-red-500 rounded transition-colors"
+                                            title="Eliminar"
                                           >
                                             <Trash2 className="w-3.5 h-3.5" />
                                           </button>
