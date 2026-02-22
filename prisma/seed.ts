@@ -78,16 +78,6 @@ async function main() {
       },
     })
 
-    const socialesPassword = await bcrypt.hash('sociales5290', 10)
-    await prisma.user.create({
-      data: {
-        email: 'secsociales@webcva.net',
-        password: socialesPassword,
-        name: 'Secretaría de Sociales',
-        role: 'SOCIALES',
-      },
-    })
-
     for (const u of committeeUsers) {
       const hashed = await bcrypt.hash(u.password, 10)
       await prisma.user.create({
@@ -100,9 +90,24 @@ async function main() {
         },
       })
     }
-    console.log(`✅ ${committeeUsers.length + 3} usuarios creados`)
+    console.log(`✅ ${committeeUsers.length + 2} usuarios base creados`)
   } else {
-    console.log('⏭️  Usuarios ya existen — omitiendo creación')
+    console.log('⏭️  Usuarios base ya existen — omitiendo creación')
+  }
+
+  // Usuarios nuevos por rol — se crean individualmente si aún no existen
+  const existingSociales = await prisma.user.findUnique({ where: { email: 'secsociales@webcva.net' } })
+  if (!existingSociales) {
+    const socialesPassword = await bcrypt.hash('sociales5290', 10)
+    await prisma.user.create({
+      data: {
+        email: 'secsociales@webcva.net',
+        password: socialesPassword,
+        name: 'Secretaría de Sociales',
+        role: 'SOCIALES',
+      },
+    })
+    console.log('✅ Usuario Secretaría de Sociales creado')
   }
 
   console.log('\n🎉 Seed completado exitosamente!')
