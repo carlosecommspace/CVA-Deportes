@@ -42,8 +42,8 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 rounded-2xl backdrop-blur-sm mb-4 border border-white/20">
             <Trophy className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white">CVA Deportes</h1>
-          <p className="text-primary-200 mt-1">Secretaría de Deportes</p>
+          <h1 className="text-3xl font-bold text-white">CVA</h1>
+          <p className="text-primary-200 mt-1">Deportes y Sociales</p>
         </div>
 
         {/* Card */}
@@ -114,7 +114,7 @@ export default function LoginPage() {
 
           <div className="mt-6 pt-6 border-t border-gray-100">
             <p className="text-xs text-gray-400 text-center">
-              Sistema interno CVA — Secretaría de Deportes
+              Sistema interno CVA — Deportes y Sociales
             </p>
           </div>
         </div>

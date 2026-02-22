@@ -76,8 +76,8 @@ export function Sidebar() {
             <span className="text-white font-bold text-lg">C</span>
           </div>
           <div>
-            <p className="font-bold text-gray-900 text-sm leading-tight">CVA Deportes</p>
-            <p className="text-xs text-gray-500">Sec. de Deportes</p>
+            <p className="font-bold text-gray-900 text-sm leading-tight">CVA</p>
+            <p className="text-xs text-gray-500">Deportes y Sociales</p>
           </div>
         </div>
       </div>

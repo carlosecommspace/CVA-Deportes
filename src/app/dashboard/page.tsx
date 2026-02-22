@@ -81,7 +81,7 @@ export default function DashboardPage() {
         <p className="text-gray-500 mt-1">
           {session?.user.role === 'COMITE'
             ? `Panel del comité de ${session.user.disciplineName}`
-            : 'Panel de control — CVA Secretaría de Deportes'}
+            : 'Panel de control — CVA Deportes y Sociales'}
         </p>
       </div>
 
