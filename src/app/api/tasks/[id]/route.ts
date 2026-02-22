@@ -21,6 +21,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
+  // SOCIALES can only edit tasks from their department
+  if (session.user.role === 'SOCIALES' && task.department !== 'SOCIALES') {
+    return NextResponse.json({ error: 'Sin permisos para modificar tareas de otro departamento' }, { status: 403 })
+  }
+
   const updated = await prisma.task.update({
     where: { id: params.id },
     data: {
@@ -44,7 +49,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  if (session.user.role !== 'ADMIN') return NextResponse.json({ error: 'Solo admin puede eliminar tareas' }, { status: 403 })
+
+  if (session.user.role !== 'ADMIN' && session.user.role !== 'SOCIALES') {
+    return NextResponse.json({ error: 'Sin permisos para eliminar tareas' }, { status: 403 })
+  }
+
+  if (session.user.role === 'SOCIALES') {
+    const task = await prisma.task.findUnique({ where: { id: params.id } })
+    if (!task || task.department !== 'SOCIALES') {
+      return NextResponse.json({ error: 'Sin permisos para eliminar tareas de otro departamento' }, { status: 403 })
+    }
+  }
 
   await prisma.task.delete({ where: { id: params.id } })
   return NextResponse.json({ success: true })

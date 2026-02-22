@@ -14,6 +14,7 @@ interface Task {
   description?: string
   status: string
   priority: string
+  department: string
   dueDate?: string
   order: number
   createdBy: { id: string; name: string }
@@ -59,8 +60,15 @@ export function KanbanBoard({ tasks, onUpdate, session }: KanbanBoardProps) {
     onUpdate()
   }
 
-  const isAdmin = session?.user.role === 'ADMIN'
+  const role = session?.user.role
+  const canManageTask = (task: Task) =>
+    role === 'ADMIN' || (role === 'SOCIALES' && task.department === 'SOCIALES')
   const isPastDue = (dueDate?: string) => dueDate && new Date(dueDate) < new Date()
+
+  const DEPT_BADGE: Record<string, { label: string; color: string }> = {
+    DEPORTES: { label: 'Deportes', color: 'bg-blue-100 text-blue-700' },
+    SOCIALES: { label: 'Sociales', color: 'bg-purple-100 text-purple-700' },
+  }
 
   return (
     <div className="flex-1 overflow-x-auto -mx-6 lg:-mx-8 px-6 lg:px-8 pb-4">
@@ -116,7 +124,7 @@ export function KanbanBoard({ tasks, onUpdate, session }: KanbanBoardProps) {
                                       <GripVertical className="w-4 h-4" />
                                     </div>
                                     <div className="flex gap-1">
-                                      {isAdmin && (
+                                      {canManageTask(task) && (
                                         <>
                                           <button
                                             onClick={() => setEditTask(task)}
@@ -151,6 +159,14 @@ export function KanbanBoard({ tasks, onUpdate, session }: KanbanBoardProps) {
                                       <span className={`w-1.5 h-1.5 rounded-full ${priorityInfo?.dot}`} />
                                       {priorityInfo?.label}
                                     </Badge>
+                                    {(() => {
+                                      const dept = DEPT_BADGE[task.department] ?? DEPT_BADGE.DEPORTES
+                                      return (
+                                        <Badge className={dept.color}>
+                                          {dept.label}
+                                        </Badge>
+                                      )
+                                    })()}
                                   </div>
 
                                   <div className="mt-2 flex items-center justify-between text-xs text-gray-400">

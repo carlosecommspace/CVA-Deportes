@@ -155,12 +155,12 @@ export function EventDetailModal({ eventId, onClose, onUpdate }: EventDetailModa
     onClose()
   }
 
-  const canDelete = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA'
+  const canDelete = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA' || session?.user.role === 'SOCIALES'
 
-  const canEditEvent = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA' ||
+  const canEditEvent = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA' || session?.user.role === 'SOCIALES' ||
     (session?.user.role === 'COMITE' && event?.discipline.name === session.user.disciplineName)
 
-  const canManageChecklist = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA'
+  const canManageChecklist = session?.user.role === 'ADMIN' || session?.user.role === 'TRABAJADORA' || session?.user.role === 'SOCIALES'
 
   if (loading || !event) {
     return (

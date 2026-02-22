@@ -14,6 +14,7 @@ interface Task {
   description?: string
   status: string
   priority: string
+  department: string
   dueDate?: string
   order: number
   createdBy: { id: string; name: string }
@@ -60,10 +61,10 @@ export default function TareasPage() {
             <h1 className="text-2xl font-bold text-gray-900">Tareas</h1>
           </div>
           <p className="text-gray-500 text-sm mt-1">
-            Gestión de tareas — Panel de {session?.user.role === 'ADMIN' ? 'administración' : 'trabajo'}
+            Gestión de tareas — Panel de {session?.user.role === 'ADMIN' ? 'Deportes' : session?.user.role === 'SOCIALES' ? 'Sociales' : 'trabajo'}
           </p>
         </div>
-        {session?.user.role === 'ADMIN' && (
+        {(session?.user.role === 'ADMIN' || session?.user.role === 'SOCIALES') && (
           <Button onClick={() => setCreateOpen(true)}>
             <Plus className="w-4 h-4" />
             Nueva Tarea

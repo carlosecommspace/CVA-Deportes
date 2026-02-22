@@ -21,13 +21,13 @@ const navItems = [
     href: '/dashboard',
     label: 'Inicio',
     icon: LayoutDashboard,
-    roles: ['ADMIN', 'TRABAJADORA', 'COMITE'],
+    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'SOCIALES'],
   },
   {
     href: '/calendario',
     label: 'Calendario',
     icon: Calendar,
-    roles: ['ADMIN', 'TRABAJADORA', 'COMITE'],
+    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'SOCIALES'],
   },
   {
     href: '/requerimientos',
@@ -39,7 +39,7 @@ const navItems = [
     href: '/tareas',
     label: 'Tareas',
     icon: KanbanSquare,
-    roles: ['ADMIN', 'TRABAJADORA'],
+    roles: ['ADMIN', 'TRABAJADORA', 'SOCIALES'],
   },
 ]
 
@@ -47,12 +47,14 @@ const roleLabels: Record<string, string> = {
   ADMIN: 'Administrador',
   TRABAJADORA: 'T. Social y Deportes',
   COMITE: 'Comité',
+  SOCIALES: 'Sec. de Sociales',
 }
 
 const roleColors: Record<string, string> = {
   ADMIN: 'bg-primary-100 text-primary-700',
   TRABAJADORA: 'bg-green-100 text-green-700',
   COMITE: 'bg-orange-100 text-orange-700',
+  SOCIALES: 'bg-purple-100 text-purple-700',
 }
 
 export function Sidebar() {

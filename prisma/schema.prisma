@@ -143,6 +143,7 @@ model Task {
   description  String?
   status       String    @default("POR_HACER") // POR_HACER | EN_PROGRESO | PARA_REVISAR | COMPLETADA
   priority     String    @default("MEDIA") // ALTA | MEDIA | BAJA
+  department   String    @default("DEPORTES") // DEPORTES | SOCIALES
   dueDate      DateTime?
   createdById  String
   createdBy    User      @relation("TaskCreator", fields: [createdById], references: [id])
