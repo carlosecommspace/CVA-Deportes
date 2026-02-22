@@ -53,7 +53,7 @@ async function main() {
   console.log(`✅ ${disciplines.length} disciplinas procesadas`)
 
   // Usuarios — solo en primera vez; en deploys posteriores no se tocan
-  const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@webcva.net' } })
+  const existingAdmin = await prisma.user.findUnique({ where: { email: 'secdeportes@webcva.net' } })
 
   if (!existingAdmin) {
     console.log('👤 Primera vez: creando usuarios iniciales...')
@@ -61,7 +61,7 @@ async function main() {
     const adminPassword = await bcrypt.hash('gestion4821', 10)
     await prisma.user.create({
       data: {
-        email: 'admin@webcva.net',
+        email: 'secdeportes@webcva.net',
         password: adminPassword,
         name: 'Administrador CVA',
         role: 'ADMIN',
