@@ -63,26 +63,9 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Create default checklist items if provided
   if (checklist && checklist.length > 0) {
     await prisma.eventChecklist.createMany({
       data: checklist.map((item: string, idx: number) => ({
-        eventId: event.id,
-        item,
-        order: idx,
-      })),
-    })
-  } else {
-    // Default checklist
-    const defaultItems = [
-      'Confirmar número de participantes',
-      'Verificar disponibilidad del espacio',
-      'Comunicar a los socios',
-      'Preparar materiales necesarios',
-      'Confirmar asistencia de responsables',
-    ]
-    await prisma.eventChecklist.createMany({
-      data: defaultItems.map((item, idx) => ({
         eventId: event.id,
         item,
         order: idx,
