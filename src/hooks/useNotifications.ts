@@ -9,6 +9,12 @@ const STORAGE_KEY = 'cva_notif_seen'
 
 const NOTIFIED_ROLES = ['ADMIN', 'TRABAJADORA', 'SOCIALES']
 
+export type NotificationItem = {
+  id: string
+  type: 'event' | 'task' | 'requirement'
+  title: string
+}
+
 function loadSeen(): Set<string> {
   if (typeof window === 'undefined') return new Set()
   try {
@@ -30,6 +36,7 @@ export function useNotifications() {
   const seenRef = useRef<Set<string>>(new Set())
   const initialized = useRef(false)
   const [unread, setUnread] = useState(0)
+  const [items, setItems] = useState<NotificationItem[]>([])
 
   // Load persisted seen IDs on mount
   useEffect(() => {
@@ -57,7 +64,7 @@ export function useNotifications() {
 
     async function poll() {
       const isFirst = !initialized.current
-      let newCount = 0
+      const newItems: NotificationItem[] = []
 
       for (const { url, type } of endpoints) {
         try {
@@ -85,7 +92,7 @@ export function useNotifications() {
                   })
                 }
 
-                newCount++
+                newItems.push({ id: item.id, type, title: item.title })
               }
             }
           }
@@ -98,7 +105,10 @@ export function useNotifications() {
       }
 
       persistSeen(seenRef.current)
-      if (!isFirst && newCount > 0) setUnread((n) => n + newCount)
+      if (!isFirst && newItems.length > 0) {
+        setUnread((n) => n + newItems.length)
+        setItems((prev) => [...newItems, ...prev].slice(0, 50))
+      }
       if (isFirst) initialized.current = true
     }
 
@@ -112,6 +122,10 @@ export function useNotifications() {
 
   return {
     unread,
-    clearUnread: () => setUnread(0),
+    items,
+    clearAll: () => {
+      setUnread(0)
+      setItems([])
+    },
   }
 }

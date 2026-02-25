@@ -18,6 +18,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Toaster } from '@/components/ui/Toaster'
+import { NotificationPanel } from '@/components/ui/NotificationPanel'
 
 const navItems = [
   {
@@ -66,12 +67,22 @@ export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { unread, clearUnread } = useNotifications()
+  const [panelOpen, setPanelOpen] = useState(false)
+  const { unread, items, clearAll } = useNotifications()
 
   if (!session) return null
 
   const role = session.user.role
   const filteredItems = navItems.filter((item) => item.roles.includes(role))
+
+  function handleBellClick() {
+    setPanelOpen((prev) => !prev)
+  }
+
+  function handlePanelClose() {
+    setPanelOpen(false)
+    clearAll()
+  }
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -103,11 +114,14 @@ export function Sidebar() {
             </div>
             {unread > 0 && (
               <button
-                onClick={clearUnread}
+                onClick={handleBellClick}
                 title={`${unread} notificación${unread !== 1 ? 'es' : ''} nueva${unread !== 1 ? 's' : ''}`}
-                className="relative flex-shrink-0 mt-0.5 p-1 rounded-lg hover:bg-gray-200 transition-colors"
+                className={cn(
+                  'relative flex-shrink-0 mt-0.5 p-1 rounded-lg transition-colors',
+                  panelOpen ? 'bg-primary-100' : 'hover:bg-gray-200',
+                )}
               >
-                <Bell className="w-5 h-5 text-primary-600" />
+                <Bell className={cn('w-5 h-5', panelOpen ? 'text-primary-700' : 'text-primary-600')} />
                 <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-bold px-0.5">
                   {unread > 9 ? '9+' : unread}
                 </span>
@@ -178,6 +192,11 @@ export function Sidebar() {
             <SidebarContent />
           </aside>
         </div>
+      )}
+
+      {/* Notification panel */}
+      {panelOpen && (
+        <NotificationPanel items={items} onClose={handlePanelClose} />
       )}
 
       {/* Global toast notifications */}
