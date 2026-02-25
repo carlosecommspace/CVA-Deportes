@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
     include: {
       discipline: true,
       createdBy: { select: { id: true, name: true } },
+      _count: { select: { comments: true } },
     },
     orderBy: [{ priority: 'asc' }, { createdAt: 'desc' }],
   })

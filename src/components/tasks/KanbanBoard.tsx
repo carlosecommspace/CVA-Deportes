@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { PRIORITY, TASK_STATUS, formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
-import { Edit2, Trash2, Calendar, User, GripVertical, Archive } from 'lucide-react'
+import { Edit2, Trash2, Calendar, User, GripVertical, Archive, MessageCircle } from 'lucide-react'
 import { TaskModal } from './TaskModal'
+import { CommentsDrawer } from '@/components/ui/CommentsDrawer'
 import type { Session } from 'next-auth'
 
 interface Task {
@@ -19,6 +20,7 @@ interface Task {
   order: number
   createdBy: { id: string; name: string }
   assignedTo?: { id: string; name: string }
+  _count?: { comments: number }
 }
 
 const COLUMNS: Array<{ key: string; label: string; color: string; bg: string }> = [
@@ -37,6 +39,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ tasks, onUpdate, session, onArchive }: KanbanBoardProps) {
   const [editTask, setEditTask] = useState<Task | null>(null)
+  const [commentTask, setCommentTask] = useState<Task | null>(null)
 
   const getColumnTasks = (status: string) =>
     tasks.filter((t) => t.status === status).sort((a, b) => a.order - b.order)
@@ -135,7 +138,17 @@ export function KanbanBoard({ tasks, onUpdate, session, onArchive }: KanbanBoard
                                     >
                                       <GripVertical className="w-4 h-4" />
                                     </div>
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1 items-center">
+                                      <button
+                                        onClick={() => setCommentTask(task)}
+                                        className="flex items-center gap-0.5 p-1 text-gray-300 hover:text-primary-600 rounded transition-colors"
+                                        title="Comentarios"
+                                      >
+                                        <MessageCircle className="w-3.5 h-3.5" />
+                                        {(task._count?.comments ?? 0) > 0 && (
+                                          <span className="text-[10px] font-medium">{task._count!.comments}</span>
+                                        )}
+                                      </button>
                                       {canManageTask(task) && (
                                         <>
                                           <button
@@ -234,6 +247,14 @@ export function KanbanBoard({ tasks, onUpdate, session, onArchive }: KanbanBoard
           onClose={() => setEditTask(null)}
           onSuccess={() => { setEditTask(null); onUpdate() }}
           task={editTask}
+        />
+      )}
+      {commentTask && (
+        <CommentsDrawer
+          title={commentTask.title}
+          apiPath={`/api/tasks/${commentTask.id}/comments`}
+          canComment={role !== 'OBSERVADOR'}
+          onClose={() => setCommentTask(null)}
         />
       )}
     </div>

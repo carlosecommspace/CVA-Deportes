@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
-import { Plus, Package, Filter, Search, Edit2, Trash2, ChevronDown } from 'lucide-react'
+import { Plus, Package, Search, Edit2, Trash2, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { RequirementModal } from '@/components/requirements/RequirementModal'
+import { CommentsDrawer } from '@/components/ui/CommentsDrawer'
 import { PRIORITY, REQUIREMENT_STATUS, REQUIREMENT_CATEGORIES, formatDate } from '@/lib/utils'
 
 interface Requirement {
@@ -22,6 +23,7 @@ interface Requirement {
   discipline: { id: string; name: string; icon: string; color: string }
   createdBy: { id: string; name: string }
   createdAt: string
+  _count?: { comments: number }
 }
 
 interface Discipline {
@@ -37,6 +39,7 @@ export default function RequerimientosPage() {
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Requirement | null>(null)
+  const [commentTarget, setCommentTarget] = useState<Requirement | null>(null)
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [filterPriority, setFilterPriority] = useState('')
@@ -265,22 +268,34 @@ export default function RequerimientosPage() {
                       )}
                       <span>Por: {req.createdBy.name}</span>
                     </div>
-                    {canEdit && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => setEditTarget(req)}
-                          className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(req.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setCommentTarget(req)}
+                        className="flex items-center gap-1 p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        title="Ver comentarios"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        {(req._count?.comments ?? 0) > 0 && (
+                          <span className="text-xs font-medium">{req._count!.comments}</span>
+                        )}
+                      </button>
+                      {canEdit && (
+                        <>
+                          <button
+                            onClick={() => setEditTarget(req)}
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(req.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -303,6 +318,14 @@ export default function RequerimientosPage() {
           onClose={() => setEditTarget(null)}
           onSuccess={() => { setEditTarget(null); loadRequirements() }}
           requirement={editTarget}
+        />
+      )}
+      {commentTarget && (
+        <CommentsDrawer
+          title={commentTarget.title}
+          apiPath={`/api/requirements/${commentTarget.id}/comments`}
+          canComment={session?.user.role !== 'OBSERVADOR'}
+          onClose={() => setCommentTarget(null)}
         />
       )}
     </div>

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
     include: {
       createdBy: { select: { id: true, name: true } },
       assignedTo: { select: { id: true, name: true } },
+      _count: { select: { comments: true } },
     },
     orderBy: showArchived
       ? [{ archivedAt: 'desc' }]

@@ -22,6 +22,7 @@ interface Task {
   order: number
   createdBy: { id: string; name: string }
   assignedTo?: { id: string; name: string }
+  _count?: { comments: number }
 }
 
 const DEPT_BADGE: Record<string, { label: string; color: string }> = {

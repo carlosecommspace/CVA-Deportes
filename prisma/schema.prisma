@@ -19,14 +19,16 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  createdEvents     Event[]          @relation("EventCreator")
-  comments          EventComment[]
-  createdTasks      Task[]           @relation("TaskCreator")
-  assignedTasks     Task[]           @relation("TaskAssignee")
-  requirements      Requirement[]
-  checklistItems    EventChecklist[] @relation("ChecklistCompleter")
-  accounts          Account[]
-  sessions          Session[]
+  createdEvents        Event[]               @relation("EventCreator")
+  comments             EventComment[]
+  requirementComments  RequirementComment[]
+  taskComments         TaskComment[]
+  createdTasks         Task[]                @relation("TaskCreator")
+  assignedTasks        Task[]                @relation("TaskAssignee")
+  requirements         Requirement[]
+  checklistItems       EventChecklist[]      @relation("ChecklistCompleter")
+  accounts             Account[]
+  sessions             Session[]
 }
 
 model Account {
@@ -135,6 +137,18 @@ model Requirement {
   createdBy     User      @relation(fields: [createdById], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  comments      RequirementComment[]
+}
+
+model RequirementComment {
+  id            String      @id @default(cuid())
+  requirementId String
+  requirement   Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  content       String
+  createdAt     DateTime    @default(now())
 }
 
 model Task {
@@ -154,4 +168,16 @@ model Task {
   archivedAt   DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+
+  comments     TaskComment[]
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
 }
