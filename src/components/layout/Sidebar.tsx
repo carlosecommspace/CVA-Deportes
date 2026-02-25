@@ -21,25 +21,25 @@ const navItems = [
     href: '/dashboard',
     label: 'Inicio',
     icon: LayoutDashboard,
-    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'SOCIALES'],
+    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'SOCIALES', 'OBSERVADOR'],
   },
   {
     href: '/calendario',
     label: 'Calendario',
     icon: Calendar,
-    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'SOCIALES'],
+    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'SOCIALES', 'OBSERVADOR'],
   },
   {
     href: '/requerimientos',
     label: 'Requerimientos',
     icon: Package,
-    roles: ['ADMIN', 'TRABAJADORA', 'COMITE'],
+    roles: ['ADMIN', 'TRABAJADORA', 'COMITE', 'OBSERVADOR'],
   },
   {
     href: '/tareas',
     label: 'Tareas',
     icon: KanbanSquare,
-    roles: ['ADMIN', 'TRABAJADORA', 'SOCIALES'],
+    roles: ['ADMIN', 'TRABAJADORA', 'SOCIALES', 'OBSERVADOR'],
   },
 ]
 
@@ -48,6 +48,7 @@ const roleLabels: Record<string, string> = {
   TRABAJADORA: 'T. Social y Deportes',
   COMITE: 'Comité',
   SOCIALES: 'Sec. de Sociales',
+  OBSERVADOR: 'Observador',
 }
 
 const roleColors: Record<string, string> = {
@@ -55,6 +56,7 @@ const roleColors: Record<string, string> = {
   TRABAJADORA: 'bg-green-100 text-green-700',
   COMITE: 'bg-orange-100 text-orange-700',
   SOCIALES: 'bg-purple-100 text-purple-700',
+  OBSERVADOR: 'bg-gray-100 text-gray-600',
 }
 
 export function Sidebar() {

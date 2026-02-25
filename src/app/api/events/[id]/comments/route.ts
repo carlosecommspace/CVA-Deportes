@@ -7,6 +7,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
 
+  if (session.user.role === 'OBSERVADOR') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+
   const { content } = await req.json()
   if (!content?.trim()) return NextResponse.json({ error: 'El comentario no puede estar vacío' }, { status: 400 })
 

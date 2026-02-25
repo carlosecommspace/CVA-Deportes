@@ -10,6 +10,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const body = await req.json()
   const { title, description, category, priority, estimatedDate, quantity, unit, status, notes } = body
 
+  if (session.user.role === 'OBSERVADOR') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+
   const req_ = await prisma.requirement.findUnique({ where: { id: params.id } })
   if (!req_) return NextResponse.json({ error: 'Requerimiento no encontrado' }, { status: 404 })
 
@@ -42,6 +44,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+
+  if (session.user.role === 'OBSERVADOR') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
 
   const req_ = await prisma.requirement.findUnique({ where: { id: params.id } })
   if (!req_) return NextResponse.json({ error: 'No encontrado' }, { status: 404 })

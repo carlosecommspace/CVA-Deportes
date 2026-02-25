@@ -30,6 +30,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Faltan campos requeridos' }, { status: 400 })
   }
 
+  if (session.user.role === 'OBSERVADOR') {
+    return NextResponse.json({ error: 'Sin permisos para crear eventos' }, { status: 403 })
+  }
+
   // Comités can only create events for their own discipline
   if (session.user.role === 'COMITE' && session.user.disciplineId !== disciplineId) {
     return NextResponse.json({ error: 'Solo puedes crear eventos para tu disciplina' }, { status: 403 })

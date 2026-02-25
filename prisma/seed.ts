@@ -111,6 +111,35 @@ async function main() {
     console.log('✅ Usuario Secretaría de Sociales creado')
   }
 
+  // Usuarios Observador — se crean individualmente si aún no existen
+  const existingContable = await prisma.user.findUnique({ where: { email: 'contable@webcva.net' } })
+  if (!existingContable) {
+    const contablePassword = await bcrypt.hash('contable3847', 10)
+    await prisma.user.create({
+      data: {
+        email: 'contable@webcva.net',
+        password: contablePassword,
+        name: 'Contabilidad CVA',
+        role: 'OBSERVADOR',
+      },
+    })
+    console.log('✅ Usuario Contable (Observador) creado')
+  }
+
+  const existingAdministracion = await prisma.user.findUnique({ where: { email: 'administracion@webcva.net' } })
+  if (!existingAdministracion) {
+    const administracionPassword = await bcrypt.hash('admin2965', 10)
+    await prisma.user.create({
+      data: {
+        email: 'administracion@webcva.net',
+        password: administracionPassword,
+        name: 'Administración CVA',
+        role: 'OBSERVADOR',
+      },
+    })
+    console.log('✅ Usuario Administración (Observador) creado')
+  }
+
   console.log('\n🎉 Seed completado exitosamente!')
 }
 

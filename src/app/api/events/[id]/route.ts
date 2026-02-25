@@ -35,6 +35,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const body = await req.json()
   const { title, description, location, date, endDate, status } = body
 
+  if (session.user.role === 'OBSERVADOR') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+
   const event = await prisma.event.findUnique({ where: { id: params.id } })
   if (!event) return NextResponse.json({ error: 'Evento no encontrado' }, { status: 404 })
 
@@ -69,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  if (session.user.role === 'COMITE') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+  if (session.user.role === 'COMITE' || session.user.role === 'OBSERVADOR') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
 
   await prisma.event.delete({ where: { id: params.id } })
   return NextResponse.json({ success: true })

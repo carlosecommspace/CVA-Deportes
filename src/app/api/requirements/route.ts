@@ -41,6 +41,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Título y disciplina son requeridos' }, { status: 400 })
   }
 
+  if (session.user.role === 'OBSERVADOR') {
+    return NextResponse.json({ error: 'Sin permisos para crear requerimientos' }, { status: 403 })
+  }
+
   if (session.user.role === 'COMITE' && session.user.disciplineId !== disciplineId) {
     return NextResponse.json({ error: 'Solo puedes crear requerimientos para tu disciplina' }, { status: 403 })
   }

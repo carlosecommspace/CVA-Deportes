@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
-  if (session.user.role === 'COMITE') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
+  if (session.user.role === 'COMITE' || session.user.role === 'OBSERVADOR') return NextResponse.json({ error: 'Sin permisos' }, { status: 403 })
 
   const body = await req.json()
   const { title, description, priority, dueDate, assignedToId, status, order, archived } = body
