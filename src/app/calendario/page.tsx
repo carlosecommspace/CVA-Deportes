@@ -70,8 +70,8 @@ export default function CalendarioPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [selectedSlotDate, setSelectedSlotDate] = useState<Date | null>(null)
 
-  const loadEvents = useCallback(() => {
-    setLoading(true)
+  const loadEvents = useCallback((silent = false) => {
+    if (!silent) setLoading(true)
     fetch('/api/events')
       .then((r) => r.json())
       .then((data: RawEvent[]) => {
@@ -90,11 +90,16 @@ export default function CalendarioPage() {
           })),
         )
       })
-      .finally(() => setLoading(false))
+      .finally(() => { if (!silent) setLoading(false) })
   }, [])
 
   useEffect(() => {
     loadEvents()
+  }, [loadEvents])
+
+  useEffect(() => {
+    const id = setInterval(() => loadEvents(true), 30_000)
+    return () => clearInterval(id)
   }, [loadEvents])
 
   const eventStyleGetter = (event: CalendarEvent) => {

@@ -40,16 +40,22 @@ export default function TareasPage() {
     redirect('/dashboard')
   }
 
-  const loadTasks = useCallback((archived = false) => {
-    setLoading(true)
+  const loadTasks = useCallback((archived = false, silent = false) => {
+    if (!silent) setLoading(true)
     fetch(`/api/tasks${archived ? '?archived=true' : ''}`)
       .then((r) => r.json())
       .then(setTasks)
-      .finally(() => setLoading(false))
+      .finally(() => { if (!silent) setLoading(false) })
   }, [])
 
   useEffect(() => {
     if (session) loadTasks(showArchive)
+  }, [session, loadTasks, showArchive])
+
+  useEffect(() => {
+    if (!session) return
+    const id = setInterval(() => loadTasks(showArchive, true), 30_000)
+    return () => clearInterval(id)
   }, [session, loadTasks, showArchive])
 
   const handleUnarchive = async (id: string) => {

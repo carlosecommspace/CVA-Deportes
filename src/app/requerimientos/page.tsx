@@ -42,17 +42,22 @@ export default function RequerimientosPage() {
   const [filterPriority, setFilterPriority] = useState('')
   const [filterDiscipline, setFilterDiscipline] = useState('')
 
-  const loadRequirements = useCallback(() => {
-    setLoading(true)
+  const loadRequirements = useCallback((silent = false) => {
+    if (!silent) setLoading(true)
     fetch('/api/requirements')
       .then((r) => r.json())
       .then(setRequirements)
-      .finally(() => setLoading(false))
+      .finally(() => { if (!silent) setLoading(false) })
   }, [])
 
   useEffect(() => {
     loadRequirements()
     fetch('/api/disciplines').then((r) => r.json()).then(setDisciplines)
+  }, [loadRequirements])
+
+  useEffect(() => {
+    const id = setInterval(() => loadRequirements(true), 30_000)
+    return () => clearInterval(id)
   }, [loadRequirements])
 
   const handleDelete = async (id: string) => {
