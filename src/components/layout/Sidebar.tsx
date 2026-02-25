@@ -12,9 +12,12 @@ import {
   Menu,
   X,
   ChevronRight,
+  Bell,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useNotifications } from '@/hooks/useNotifications'
+import { Toaster } from '@/components/ui/Toaster'
 
 const navItems = [
   {
@@ -63,6 +66,7 @@ export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { unread, clearUnread } = useNotifications()
 
   if (!session) return null
 
@@ -87,13 +91,29 @@ export function Sidebar() {
       {/* User info */}
       <div className="px-4 py-4 border-b border-gray-100">
         <div className="bg-gray-50 rounded-xl p-3">
-          <p className="font-semibold text-gray-900 text-sm truncate">{session.user.name}</p>
-          {session.user.disciplineName && (
-            <p className="text-xs text-gray-500 mt-0.5 truncate">{session.user.disciplineName}</p>
-          )}
-          <span className={cn('inline-flex mt-1.5 rounded-full px-2 py-0.5 text-xs font-medium', roleColors[role])}>
-            {roleLabels[role] || role}
-          </span>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900 text-sm truncate">{session.user.name}</p>
+              {session.user.disciplineName && (
+                <p className="text-xs text-gray-500 mt-0.5 truncate">{session.user.disciplineName}</p>
+              )}
+              <span className={cn('inline-flex mt-1.5 rounded-full px-2 py-0.5 text-xs font-medium', roleColors[role])}>
+                {roleLabels[role] || role}
+              </span>
+            </div>
+            {unread > 0 && (
+              <button
+                onClick={clearUnread}
+                title={`${unread} notificación${unread !== 1 ? 'es' : ''} nueva${unread !== 1 ? 's' : ''}`}
+                className="relative flex-shrink-0 mt-0.5 p-1 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                <Bell className="w-5 h-5 text-primary-600" />
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 rounded-full text-white text-[9px] flex items-center justify-center font-bold px-0.5">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -159,6 +179,9 @@ export function Sidebar() {
           </aside>
         </div>
       )}
+
+      {/* Global toast notifications */}
+      <Toaster />
     </>
   )
 }
