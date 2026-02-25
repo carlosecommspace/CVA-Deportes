@@ -21,7 +21,7 @@ function loadSeen(): Set<string> {
 function persistSeen(ids: Set<string>) {
   try {
     // Keep last 500 IDs to avoid localStorage bloat
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids].slice(-500)))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids).slice(-500)))
   } catch {}
 }
 
